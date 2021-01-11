@@ -20,8 +20,8 @@
     "Serendipity": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
-      "launchBrowser": false,
-      "launchUrl": "weatherforecast",
+      "launchBrowser": true,
+      "launchUrl": "api/users",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
