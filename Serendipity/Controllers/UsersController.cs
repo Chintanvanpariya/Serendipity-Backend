@@ -19,12 +19,14 @@ namespace Serendipity.Controllers
             this.context = context;
         }
 
+        // api/users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
         {
             return await context.Users.ToListAsync();
         }
 
+        //api/users/1
         [HttpGet("{id}")]
         public async Task< ActionResult<AppUser>> GetUser(int id)
         {
