@@ -25,6 +25,7 @@ namespace Serendipity
                 options.UseSqlServer(_config.GetConnectionString("DefaultConnection"))
             );
             services.AddControllers();
+            services.AddCors();
 
         }
 
@@ -36,7 +37,11 @@ namespace Serendipity
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseHttpsRedirection();
+
             app.UseRouting();
+
+            app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
 
             app.UseAuthorization();
 
