@@ -3,14 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Serendipity.Data;
 using Serendipity.Entities;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Serendipity.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseApiController
     {
         private readonly DataContext context;
 
