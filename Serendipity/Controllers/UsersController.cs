@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serendipity.Data;
 using Serendipity.Entities;
@@ -24,6 +25,7 @@ namespace Serendipity.Controllers
         }
 
         //api/users/1
+        [Authorize]
         [HttpGet("{id}")]
         public async Task< ActionResult<AppUser>> GetUser(int id)
         {
