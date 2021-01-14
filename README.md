@@ -1,2 +1,2 @@
 # Serendipity
-A dating web app, made from .net, Angular , SQL server
+A dating web app, backend side made from .net, mysql, SQL server.
