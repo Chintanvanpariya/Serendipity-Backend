@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serendipity.Data;
 using Serendipity.Extensions;
 using Serendipity.Interfaces;
+using Serendipity.Middleware;
 using Serendipity.Services;
 using System.Text;
 
@@ -37,10 +38,13 @@ namespace Serendipity
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            //exception handling
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //}
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseHttpsRedirection();
 
