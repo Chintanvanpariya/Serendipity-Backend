@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Serendipity.Controllers
 {
+    [Authorize]
     public class UsersController : BaseApiController
     {
+        
         private readonly DataContext context;
 
         public UsersController(DataContext context)
@@ -25,7 +27,6 @@ namespace Serendipity.Controllers
         }
 
         //api/users/1
-        [Authorize]
         [HttpGet("{id}")]
         public async Task< ActionResult<AppUser>> GetUser(int id)
         {

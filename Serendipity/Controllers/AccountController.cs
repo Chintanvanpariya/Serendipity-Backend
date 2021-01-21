@@ -31,7 +31,7 @@ namespace Serendipity.Controllers
             var user = new AppUser
             {
                 UserName = registerdto.Username.ToLower(),
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerdto.Username+registerdto.Password)),
+                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerdto.Password)),
                 PasswordSalt = hmac.Key
             };
 
@@ -52,7 +52,7 @@ namespace Serendipity.Controllers
 
             using var hmac = new HMACSHA512(user.PasswordSalt);
 
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(logindto.Username+logindto.Password));
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(logindto.Password));
 
             for(int i=0; i< computedHash.Length; i++)
             {
