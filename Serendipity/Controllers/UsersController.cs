@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Serendipity.Data;
-using Serendipity.Entities;
+using Serendipity.DTOs;
+using Serendipity.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,25 +12,31 @@ namespace Serendipity.Controllers
     public class UsersController : BaseApiController
     {
         
-        private readonly DataContext context;
+        private readonly IUserRepository userRepo;
+        private readonly IMapper mapper;
 
-        public UsersController(DataContext context)
+        public UsersController(IUserRepository userRepo, IMapper mapper)
         {
-            this.context = context;
+            this.userRepo = userRepo;
+            this.mapper = mapper;
         }
 
         // api/users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
         {
-            return await context.Users.ToListAsync();
+            var users = await userRepo.GetMembersAsync();
+
+            return Ok(users);
         }
 
         //api/users/1
-        [HttpGet("{id}")]
-        public async Task< ActionResult<AppUser>> GetUser(int id)
+        [HttpGet("{username}")]
+        public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
-            return await context.Users.FindAsync(id); 
+            return await userRepo.GetMemberAsync(username);
+
+
         }
     }
 }
