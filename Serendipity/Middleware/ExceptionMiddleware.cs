@@ -3,8 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serendipity.Errors;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -22,7 +20,7 @@ namespace Serendipity.Middleware
         {
             this.next = next;
             this.logger = logger;
-            this.env = env;
+            this.env = env;   
         }
 
         public async Task InvokeAsync(HttpContext context)

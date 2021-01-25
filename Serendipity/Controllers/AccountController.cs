@@ -22,7 +22,7 @@ namespace Serendipity.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<AppUser>> Register(RegisterDto registerdto)
+        public async Task<ActionResult<AppUser>> Register([FromQuery]RegisterDto registerdto)
         {
             if (await UserExists(registerdto.Username))
                 return BadRequest("Username taken");
