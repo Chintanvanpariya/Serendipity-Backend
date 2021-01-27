@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serendipity.DTOs;
 using Serendipity.Interfaces;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Serendipity.Controllers
@@ -37,6 +38,20 @@ namespace Serendipity.Controllers
             return await userRepo.GetMemberAsync(username);
 
 
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(MemberUpdateDto  memberupdatedto )        
+        {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = await userRepo.GetUserByUsernameAsync(username);
+
+            mapper.Map(memberupdatedto, user);
+
+            userRepo.Update(user);
+            if (await userRepo.SaveAllAsync()) return NoContent();
+
+            return BadRequest("Failed to update user");
         }
     }
 }
