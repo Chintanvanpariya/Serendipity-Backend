@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serendipity.DTOs;
+using Serendipity.Entities;
 using Serendipity.Interfaces;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Serendipity.Controllers
@@ -15,11 +16,13 @@ namespace Serendipity.Controllers
         
         private readonly IUserRepository userRepo;
         private readonly IMapper mapper;
+        private readonly IPhotoService photoService;
 
-        public UsersController(IUserRepository userRepo, IMapper mapper)
+        public UsersController(IUserRepository userRepo, IMapper mapper, IPhotoService photoService)
         {
             this.userRepo = userRepo;
             this.mapper = mapper;
+            this.photoService = photoService;
         }
 
         // api/users
@@ -43,8 +46,7 @@ namespace Serendipity.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateUser(MemberUpdateDto  memberupdatedto )        
         {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var user = await userRepo.GetUserByUsernameAsync(username);
+            var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
 
             mapper.Map(memberupdatedto, user);
 
@@ -53,5 +55,35 @@ namespace Serendipity.Controllers
 
             return BadRequest("Failed to update user");
         }
+
+
+        [HttpPost("add-photo")]
+        public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
+        {
+            var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
+
+            var result = await photoService.AddPhotoAsync(file);
+
+            if (result.Error != null) return BadRequest(result.Error.Message);
+
+            var photo = new Photo
+            {
+                Url = result.SecureUrl.AbsoluteUri,
+                PublicId = result.PublicId,
+            };
+
+            if(user.Photos.Count == 0)
+            {
+                photo.IsMain = true;
+            }
+
+            user.Photos.Add(photo);
+
+            if(await userRepo.SaveAllAsync())   
+                return mapper.Map<PhotoDto>(photo) ;
+
+            return BadRequest("Problem occurred ");
+        }
+
     }
 }
