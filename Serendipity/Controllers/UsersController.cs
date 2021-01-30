@@ -6,6 +6,7 @@ using Serendipity.DTOs;
 using Serendipity.Entities;
 using Serendipity.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Serendipity.Controllers
@@ -13,7 +14,7 @@ namespace Serendipity.Controllers
     [Authorize]
     public class UsersController : BaseApiController
     {
-        
+
         private readonly IUserRepository userRepo;
         private readonly IMapper mapper;
         private readonly IPhotoService photoService;
@@ -35,7 +36,7 @@ namespace Serendipity.Controllers
         }
 
         //api/users/1
-        [HttpGet("{username}", Name ="GetUser")]
+        [HttpGet("{username}", Name = "GetUser")]
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
             return await userRepo.GetMemberAsync(username);
@@ -44,7 +45,7 @@ namespace Serendipity.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateUser(MemberUpdateDto  memberupdatedto )        
+        public async Task<ActionResult> UpdateUser(MemberUpdateDto memberupdatedto)
         {
             var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
 
@@ -72,19 +73,63 @@ namespace Serendipity.Controllers
                 PublicId = result.PublicId,
             };
 
-            if(user.Photos.Count == 0)
+            if (user.Photos.Count == 0)
             {
                 photo.IsMain = true;
             }
 
             user.Photos.Add(photo);
 
-            if(await userRepo.SaveAllAsync())
+            if (await userRepo.SaveAllAsync())
             {
-                return CreatedAtRoute("GetUser", new { USername = user.UserName },mapper.Map<PhotoDto>(photo));
+                return CreatedAtRoute("GetUser", new { Username = user.UserName }, mapper.Map<PhotoDto>(photo));
             }
 
             return BadRequest("Problem occurred ");
+        }
+
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<ActionResult> SetMainPhoto(int photoId)
+        {
+            var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
+
+            var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
+
+            if (photo.IsMain) return BadRequest("this is already your main photo");
+
+            var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
+            if (currentMain != null) currentMain.IsMain = false;
+            photo.IsMain = true;
+
+            if (await userRepo.SaveAllAsync()) return NoContent();
+
+            return BadRequest("failed to set main photo");
+
+        }
+
+        [HttpDelete("delete-photo/{photoId}")]
+        public async Task<ActionResult> DeletePhoto(int photoId)
+        {
+            var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
+
+            var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
+
+            if (photo == null) return NotFound();
+
+            if (photo.IsMain) return BadRequest("You cant delete your main photo");
+
+            if (photo.PublicId != null)
+            {
+                var result = await photoService.DeletePhotoAsync(photo.PublicId);
+
+                if (result.Error != null) return BadRequest(result.Error.Message);
+            }
+
+            user.Photos.Remove(photo);
+
+            if (await userRepo.SaveAllAsync()) return Ok();
+
+            return BadRequest("failed to delete photo");
         }
 
     }
