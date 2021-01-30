@@ -35,7 +35,7 @@ namespace Serendipity.Controllers
         }
 
         //api/users/1
-        [HttpGet("{username}")]
+        [HttpGet("{username}", Name ="GetUser")]
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
             return await userRepo.GetMemberAsync(username);
@@ -79,8 +79,10 @@ namespace Serendipity.Controllers
 
             user.Photos.Add(photo);
 
-            if(await userRepo.SaveAllAsync())   
-                return mapper.Map<PhotoDto>(photo) ;
+            if(await userRepo.SaveAllAsync())
+            {
+                return CreatedAtRoute("GetUser", new { USername = user.UserName },mapper.Map<PhotoDto>(photo));
+            }
 
             return BadRequest("Problem occurred ");
         }
