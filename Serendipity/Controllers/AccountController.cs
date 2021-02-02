@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serendipity.Data;
 using Serendipity.DTOs;
@@ -15,32 +16,39 @@ namespace Serendipity.Controllers
     {
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
+        private readonly IMapper mapper;
 
-        public AccountController(DataContext context, ITokenService tokenService)
+        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
         {
             _context = context;
-           _tokenService = tokenService;
+            _tokenService = tokenService;
+            this.mapper = mapper;
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<AppUser>> Register([FromQuery]RegisterDto registerdto)
+        public async Task<ActionResult<UserDto>> Register( RegisterDto registerdto)
         {
             if (await UserExists(registerdto.Username))
                 return BadRequest("Username taken");
 
+            var user = mapper.Map<AppUser>(registerdto);
+
             using var hmac = new HMACSHA512();
-            var user = new AppUser
-            {
-                UserName = registerdto.Username.ToLower(),
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerdto.Password)),
-                PasswordSalt = hmac.Key
-            };
+
+            user.UserName = registerdto.Username.ToLower();
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerdto.Password));
+            user.PasswordSalt = hmac.Key;
 
             _context.Users.Add(user);
 
             await _context.SaveChangesAsync();
 
-            return user;
+            return new UserDto
+            {
+                Username = user.UserName,
+                Token = _tokenService.CreateToken(user),
+                KnownAs = user.KnownAs,
+            };
         }
 
 
@@ -48,7 +56,7 @@ namespace Serendipity.Controllers
         public async Task<ActionResult<UserDto>> Login(LoginDto logindto)
         {
             var user = await _context.Users
-                .Include(p=>p.Photos)
+                .Include(p => p.Photos)
                 .SingleOrDefaultAsync(x => x.UserName == logindto.Username);
 
             if (user == null)
@@ -58,7 +66,7 @@ namespace Serendipity.Controllers
 
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(logindto.Password));
 
-            for(int i=0; i< computedHash.Length; i++)
+            for (int i = 0; i < computedHash.Length; i++)
             {
                 if (computedHash[i] != user.PasswordHash[i])
                     return Unauthorized("Invalid Password");
@@ -68,13 +76,14 @@ namespace Serendipity.Controllers
             {
                 Username = user.UserName,
                 Token = _tokenService.CreateToken(user),
-                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
+                KnownAs = user.KnownAs,
+                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
             };
         }
 
         private async Task<bool> UserExists(string username)
         {
-            return await _context.Users.AnyAsync( x=> x.UserName == username.ToLower());
+            return await _context.Users.AnyAsync(x => x.UserName == username.ToLower());
         }
 
     }
