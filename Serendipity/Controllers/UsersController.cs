@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serendipity.DTOs;
 using Serendipity.Entities;
+using Serendipity.Extensions;
+using Serendipity.Helpers;
 using Serendipity.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,9 +30,18 @@ namespace Serendipity.Controllers
 
         // api/users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
         {
-            var users = await userRepo.GetMembersAsync();
+            var user = await userRepo.GetUserByUsernameAsync(User.GetUsername());
+
+            userParams.CurrentUsername = user.UserName;
+
+            if (string.IsNullOrEmpty(userParams.Gender))
+                userParams.Gender = userParams.Gender == "male" ? "female" : "male";
+
+            var users = await userRepo.GetMembersAsync(userParams);
+
+            Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
             return Ok(users);
         }

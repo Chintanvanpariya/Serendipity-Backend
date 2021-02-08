@@ -26,7 +26,7 @@ namespace Serendipity.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<UserDto>> Register( RegisterDto registerdto)
+        public async Task<ActionResult<UserDto>> Register(RegisterDto registerdto)
         {
             if (await UserExists(registerdto.Username))
                 return BadRequest("Username taken");
@@ -48,6 +48,7 @@ namespace Serendipity.Controllers
                 Username = user.UserName,
                 Token = _tokenService.CreateToken(user),
                 KnownAs = user.KnownAs,
+                Gender = user.Gender,
             };
         }
 
@@ -78,6 +79,7 @@ namespace Serendipity.Controllers
                 Token = _tokenService.CreateToken(user),
                 KnownAs = user.KnownAs,
                 PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+                Gender = user.Gender,
             };
         }
 
