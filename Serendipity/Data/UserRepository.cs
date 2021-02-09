@@ -43,6 +43,12 @@ namespace Serendipity.Data
 
             query = query.Where(u => u.DateOfBirth >= minDob && u.DateOfBirth <= maxdob);
 
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(u => u.Created),
+                _ => query.OrderByDescending(u => u.LastActive)
+            };
+
             return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsNoTracking(),
              
                  
@@ -51,7 +57,7 @@ namespace Serendipity.Data
 
         public async Task<AppUser> GetUserByIdAsync(int id)
         {
-            return await context.Users.FindAsync();
+            return await context.Users.FindAsync(id);
         }
 
         public async Task<AppUser> GetUserByUsernameAsync(string username)

@@ -28,7 +28,6 @@ namespace Serendipity.Middleware
             try
             {
                 await next(context);
-
             }
             catch (Exception ex)
             {
