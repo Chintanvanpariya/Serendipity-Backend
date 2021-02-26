@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Serendipity.DTOs;
 using Serendipity.Entities;
 using Serendipity.Extensions;
 using Serendipity.Helpers;
 using Serendipity.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Serendipity.Data
 {
@@ -23,7 +22,7 @@ namespace Serendipity.Data
         {
             return await _context.Likes.FindAsync(sourceUserId, likedUserId);
         }
-        
+
         public async Task<PagedList<LikeDto>> GetUserLikes(LikesParams likesParams)
         {
             var users = _context.Users.OrderBy(u => u.UserName).AsQueryable();
@@ -51,7 +50,8 @@ namespace Serendipity.Data
                 Id = user.Id
             });
 
-            return await PagedList<LikeDto>.CreateAsync(likedUsers, likesParams.PageNumber, likesParams.PageSize);        
+            return await PagedList<LikeDto>.CreateAsync(likedUsers, 
+                likesParams.PageNumber, likesParams.PageSize);
         }
 
         public async Task<AppUser> GetUserWithLikes(int userId)

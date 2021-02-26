@@ -1,4 +1,4 @@
-﻿namespace Serendipity.DTOs
+namespace Serendipity.DTOs
 {
     public class PhotoDto
     {

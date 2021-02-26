@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using System;
 using Serendipity.Data;
 using Serendipity.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Serendipity.Controllers
 {
-    public class BuggyController :BaseApiController
+    public class BuggyController : BaseApiController
     {
-        private readonly DataContext context;
-
+        private readonly DataContext _context;
         public BuggyController(DataContext context)
         {
-            this.context = context;
+            _context = context;
         }
 
         [Authorize]
@@ -20,32 +20,31 @@ namespace Serendipity.Controllers
         {
             return "secret text";
         }
-        
+
         [HttpGet("not-found")]
         public ActionResult<AppUser> GetNotFound()
         {
-           var thing = context.Users.Find(-1);
+            var thing = _context.Users.Find(-1);
 
             if (thing == null) return NotFound();
 
             return Ok(thing);
         }
-        
+
         [HttpGet("server-error")]
         public ActionResult<string> GetServerError()
         {
-            var thing = context.Users.Find(-1);
+            var thing = _context.Users.Find(-1);
 
             var thingToReturn = thing.ToString();
 
-            return thingToReturn; 
+            return thingToReturn;
         }
-        
+
         [HttpGet("bad-request")]
         public ActionResult<string> GetBadRequest()
         {
             return BadRequest();
-        } 
-
+        }
     }
 }
